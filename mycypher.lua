@@ -1,112 +1,87 @@
 #!/usr/bin/env lua
 
 -- LuaCaeser, a simple cypher in Lua
--- Copyright (C) 2019 Toni Helminen
--- GPLv3 license
+-- Copyright (C) 2019-2020 Toni Helminen
+-- GPLv3
+
+-- --
+-- Variables
+-- --
 
 local mycypher = {}
 
-ALPHAS = { -- const
+-- --
+-- Constants
+-- --
+
+local ALPHAS = {
     "?","#","$","%","&","'","(",")","*","+",",","-",".","/"," ",":",";","<","=",">","@","[","]","^","_","{","|","}",
     "0","1","2","3","4","5","6","7","8","9",
     "A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
     "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
 }
 
-local NAME    = "LuaCaeser"
-local VERSION = "1.0"
-local AUTHOR  = "Toni Helminen"
+local NAME          = "LuaCaeser"
+local VERSION       = "1.01"
+local AUTHOR        = "Toni Helminen"
 
-local secret_n = 32
-local STEPS    = #ALPHAS
+local STEPS         = #ALPHAS
+local secret_number = 42
 
-local function print_help() -- private
-  print("{ # LuaCaeser help")
-  print("}\n")
-  print("{ #Usage")
-  print("  >       = lua LuaCaeser.lua [CMD] [OPT] ...,")
-  print("  sample  = lua LuaCaeser.lua -s 25 -c \"my secret text\" # Remember the secret number,")
-  print("}\n")
-  print("{")
-  print("  -h(elp)       = This help,")
-  print("  -v(ersion)    = Show version,")
-  print("  -s(ecret) N   = Set cypher key [1..50],")
-  print("  -c(ypher) S   = Cypher text S,")
-  print("  -d(ecypher) S = Decypher text S")
-  print("}")
-end
+-- --
+-- Private Functions
+-- --
 
-function between(a, b, c)
+local function between(a, b, c)
   return math.max(a, math.min(b, c))
 end
 
-local function char_to_index(x)
-  for i, c in ipairs(ALPHAS) do
-    if (c == x) then return i end
+local function char_to_index(char)
+  for i, alpha in ipairs(ALPHAS) do
+    if (char == alpha) then
+      return i
+    end
   end
+
   return 1
 end
 
-local function index_to_char(x)
-  --assert(x >= 1 and x <= #ALPHAS)
-  --print(x, #ALPHAS)
-  if (x < 1 or x > #ALPHAS) then return "?" end
-  return ALPHAS[x]
+local function index_to_char(index)
+  if (index < 1 or index > #ALPHAS) then
+    return "?"
+  end
+
+  return ALPHAS[index]
 end
 
 local function good_str(str)
-  local s = ""
+  local retstr = ""
+
   for i=1, #str do
-    local c = str:sub(i, i)
-    local n = char_to_index(c)
-    if (n == 0) then
-      s = s.."?"
+    local char = str:sub(i, i)
+    local indx = char_to_index(c)
+
+    if (indx == 0) then
+      retstr = retstr.."?"
     else
-      s = s..c
+      retstr = retstr..char
     end
   end
-  return s
+
+  return retstr
 end
 
-function mycypher.cypher_text(str)
-  local s = ""
-  str = good_str(str)
-  for i=1, #str do
-    local c = str:sub(i, i)
-    local n = char_to_index(c)
-    local r = n + secret_n
-    if (r > STEPS) then r = r - STEPS end
-    local nc = index_to_char(r)
-    s = s..nc
-  end
-  return s
-end
-
-function mycypher.decypher_text(str)
-  local s = ""
-  str = good_str(str)
-  for i=1, #str do
-    local c = str:sub(i, i)
-    local n = char_to_index(c)
-    local r = n - secret_n
-    if (r > #ALPHAS) then r = r - STEPS end
-    if (r < 1) then r = #ALPHAS + r end
-    s = s..index_to_char(r)
-  end
-  return s
-end
-
--- x = 97 + ((100 + secret_n) % 26)
--- x - 97 = (100 + secret_n) % 26
--- (x - 97) % 26 = (100 + secret_n)
--- ((x - 97) % 26) - secret_n = 100
+-- x = 97 + ((100 + secret_number) % 26)
+-- x - 97 = (100 + secret_number) % 26
+-- (x - 97) % 26 = (100 + secret_number)
+-- ((x - 97) % 26) - secret_number = 100
 
 local function smt()
-  s = ""
+  str = ""
   for i=35, 125 do
-    s = s..string.format("\"%s\",", string.char(i))
+    str = str..string.format("\"%s\",", string.char(i))
   end
-  print(s)
+  print(str)
 end
 
 local function takenext()
@@ -114,60 +89,69 @@ local function takenext()
     arg_i = arg_i + 1
     return arg[arg_i]
   end
+
   return 0
 end
 
-local function cmd_secret()
-  secret_n = between(2, tonumber(takenext()), 50)
+local function cmd_set_secretnum(num)
+  secret_number = between(2, tonumber(num), 50)
 end
 
 local function cmd_cypher()
-  print("{ # Cypher")
-  local s = takenext()
-  print(string.format("  str    = \"%s\",", s))
-  print(string.format("  secret = %s,", secret_n))
-  print(string.format("  result = \"%s\"", mycypher.cypher_text(s)))
-  print("}")
+  print("# Cypher")
+  local str = takenext()
+  print(string.format("str    : \"%s\"", str))
+  print(string.format("secret : %s", secret_number))
+  print(string.format("result : \"%s\"", mycypher.cypher_text(str)))
 end
 
 local function cmd_decypher()
-  print("{ # Decypher")
-  local s = takenext()
-  print(string.format("  str    = \"%s\",", s))
-  print(string.format("  secret = %s,", secret_n))
-  print(string.format("  result = \"%s\"", mycypher.decypher_text(s)))
-  print("}")
+  print("# Decypher")
+  local str = takenext()
+  print(string.format("str     : \"%s\"", str))
+  print(string.format("secret  : %s",     secret_number))
+  print(string.format("result  : \"%s\"", mycypher.decypher_text(str)))
 end
 
-function mycypher.go()
-  if (#arg < 1) then print_help() return nil end
+local function print_help()
+  print("# Help")
+  print("LuaCaeser, a simple cypher in Lua\n")
+  print("## Usage")
+  print("lua LuaCaeser.lua [CMD] [OPT]? ...")
+  print("lua LuaCaeser.lua -secret 25 -cypher \"lorem ipsum\" # Remember the secret number\n")
+
+  print("## Commands")
+  print("-help             This help")
+  print("-version          Show version")
+  print("-license          Show license")
+  print("-secretnum [NUM]  Set your secret number [1..50]")
+  print("-cypher [STR]     Cypher text STR")
+  print("-decypher [STR]   Decypher text STR")
+end
+
+local function parse()
   arg_i = 1
   while (arg_i <= #arg) do
-    v = arg[arg_i]
-    if (v == "-h" or v == "-help") then
-      print_help()
-    elseif (v == "-v" or v == "-version") then
-      print(string.format("{ %s %s by %s }", NAME, VERSION, AUTHOR))
-    elseif (v == "-c" or v == "-cypher") then
-      cmd_cypher()
-    elseif (v == "-d" or v == "-decypher") then
-      cmd_decypher()
-    elseif (v == "-s" or v == "-secret") then
-      cmd_secret()
-    elseif (v == "-smt") then
-      smt()
+    token = arg[arg_i]
+    if (token == "-help")          then print_help()
+    elseif (token == "-version")   then print(string.format("%s %s by %s", NAME, VERSION, AUTHOR))
+    elseif (token == "-license")   then print("GNU General Public License version 3; See 'LICENCE'")
+    elseif (token == "-cypher")    then cmd_cypher()
+    elseif (token == "-decypher")  then cmd_decypher()
+    elseif (token == "-secretnum") then cmd_set_secretnum(takenext())
+    elseif (token == "-smt")       then smt()
     end
     arg_i = arg_i + 1
   end
 end
 
-local function tests1()
+local function unittest1()
   assert("s" == index_to_char(char_to_index("s")))
   assert("a" == index_to_char(char_to_index("a")))
   assert("C" == index_to_char(char_to_index("C")))
 end
 
-local function tests2()
+local function unittest2()
   local s = "abcdefg"
   assert(mycypher.decypher_text(mycypher.cypher_text(s)) == s)
 
@@ -193,9 +177,70 @@ local function tests2()
   assert(mycypher.decypher_text(mycypher.cypher_text(s)) == s)
 end
 
-function mycypher.unittests()
-  tests1()
-  tests2()
+
+-- --
+-- Public Functions ( So LuaCyher can be used in other software )
+-- --
+
+function mycypher.set_secret_number(num)
+  cmd_set_secretnum(num)
 end
 
+function mycypher.cypher_text(str2)
+  local retstr = ""
+  local str    = good_str(str2)
+
+  for i=1, #str do
+    local char = str:sub(i, i)
+    local indx = char_to_index(char)
+    local step = indx + secret_number
+
+    if (step > STEPS) then
+      step = step - STEPS
+    end
+
+    local nc = index_to_char(step)
+    retstr = retstr..nc
+  end
+  return retstr
+end
+
+function mycypher.decypher_text(str2)
+  local retstr = ""
+  local str    = good_str(str2)
+
+  for i=1, #str do
+    local char = str:sub(i, i)
+    local indx = char_to_index(char)
+    local step = indx - secret_number
+
+    if (step > #ALPHAS) then
+      step = step - STEPS
+    end
+
+    if (step < 1) then
+      step = #ALPHAS + step
+    end
+
+    retstr = retstr..index_to_char(step)
+  end
+
+  return retstr
+end
+
+function mycypher.unittests()
+  unittest1()
+  unittest2()
+end
+
+function mycypher.go()
+  if (#arg < 1) then
+    print_help()
+    return nil
+  end
+
+  parse()
+end
+
+-- "Reason has always existed, but not always in a reasonable form." - Karl Marx
 return mycypher
