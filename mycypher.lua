@@ -100,17 +100,17 @@ end
 local function cmd_cypher()
   print("# Cypher")
   local str = takenext()
-  print(string.format("str    : \"%s\"", str))
-  print(string.format("secret : %s", secret_number))
-  print(string.format("result : \"%s\"", mycypher.cypher_text(str)))
+  print(string.format("str       : \"%s\"", str))
+  print(string.format("secretnum : %s", secret_number))
+  print(string.format("result    : \"%s\"", mycypher.cypher_text(str)))
 end
 
 local function cmd_decypher()
   print("# Decypher")
   local str = takenext()
-  print(string.format("str     : \"%s\"", str))
-  print(string.format("secret  : %s",     secret_number))
-  print(string.format("result  : \"%s\"", mycypher.decypher_text(str)))
+  print(string.format("str       : \"%s\"", str))
+  print(string.format("secretnum : %s",     secret_number))
+  print(string.format("result    : \"%s\"", mycypher.decypher_text(str)))
 end
 
 local function print_help()
@@ -118,7 +118,7 @@ local function print_help()
   print("LuaCaeser, a simple cypher in Lua\n")
   print("## Usage")
   print("lua LuaCaeser.lua [CMD] [OPT]? ...")
-  print("lua LuaCaeser.lua -secret 25 -cypher \"lorem ipsum\" # Remember the secret number\n")
+  print("lua LuaCaeser.lua -secretnum 25 -cypher \"lorem ipsum\"\n")
 
   print("## Commands")
   print("-help             This help")
