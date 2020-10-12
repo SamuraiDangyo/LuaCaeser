@@ -1,15 +1,11 @@
 ![LuaCaeser](https://github.com/SamuraiDangyo/LuaCaeser/blob/master/logo.jpg)
 
 # Overview
-LuaCaeser, a simple cypher written in Lua
+LuaCaeser, a simple cypher written in great Lua language
 
 ## How to ???
-```
-git clone https://github.com/SamuraiDangyo/LuaCaeser.git
-cd LuaCaeser
-chmod +x exe.lua
-./exe.lua -cypher "My secret is 42"
-```
+`chmod +x exe.lua` -> `./main.lua -cypher "My secret is 42"`
 
-## Credits
-logo
+## More
+Credits for logo
+Licensed under GPLv3

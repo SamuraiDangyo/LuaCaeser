@@ -3,8 +3,7 @@
 local luacaeser = require("luacaeser")
 
 local function main()
-  luacaeser.unittests()
-  luacaeser.go()
+  luacaeser.cmdline()
 end
 
 main()

@@ -15,8 +15,7 @@ local ALPHAS = {
   "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
 }
 
-local NAME          = "LuaCaeser"
-local VERSION       = "1.01"
+local NAME          = "LuaCaeser 1.02"
 local AUTHOR        = "Toni Helminen"
 local STEPS         = #ALPHAS
 local secret_number = 42
@@ -105,35 +104,14 @@ local function cmd_decypher()
 end
 
 local function print_help()
-  print("# Help")
-  print("LuaCaeser, a simple cypher in Lua\n")
-  print("## Usage")
-  print("lua LuaCaeser.lua [CMD] [OPT]? ...")
-  print("lua LuaCaeser.lua -secretnum 25 -cypher \"lorem ipsum\"\n")
-
-  print("## Commands")
-  print("-help             This help")
-  print("-version          Show version")
-  print("-license          Show license")
+  print("::.:: Help ::.::")
+  print("> lua main.lua -secretnum 25 -cypher \"lorem ipsum\"")
+  print("...")
+  print("--help            This help")
+  print("--version         Show version")
   print("-secretnum [NUM]  Set your secret number [1..50]")
   print("-cypher [STR]     Cypher text STR")
   print("-decypher [STR]   Decypher text STR")
-end
-
-local function parse()
-  arg_i = 1
-  while (arg_i <= #arg) do
-    token = arg[arg_i]
-    if (token == "-help")          then print_help()
-    elseif (token == "-version")   then print(string.format("%s %s by %s", NAME, VERSION, AUTHOR))
-    elseif (token == "-license")   then print("GNU General Public License version 3; See 'LICENCE'")
-    elseif (token == "-cypher")    then cmd_cypher()
-    elseif (token == "-decypher")  then cmd_decypher()
-    elseif (token == "-secretnum") then cmd_set_secretnum(takenext())
-    elseif (token == "-smt")       then smt()
-    end
-    arg_i = arg_i + 1
-  end
 end
 
 local function unittest1()
@@ -143,31 +121,35 @@ local function unittest1()
 end
 
 local function unittest2()
-  local s = "abcdefg"
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  local str = "abcdefg"
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "Praesent non ipsum bibendum nulla efficitur porttitor."
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = "Praesent non ipsum bibendum nulla efficitur porttitor."
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "Duis pulvinar tortor eget auctor ullamcorper."
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = "Duis pulvinar tortor eget auctor ullamcorper."
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "123 %{} d"
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = "123 %{} d"
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "123 %{} d Praesent non ipsum bibendum nulla efficitur porttitor."
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = "123 %{} d Praesent non ipsum bibendum nulla efficitur porttitor."
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "`` Duis ``"
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == "?? Duis ??")
+  str = "`` Duis ``"
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == "?? Duis ??")
 
-  s = " _34adbdd fd f.df g, SDFHGYUIWE67{[[}}"
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = " _34adbdd fd f.df g, SDFHGYUIWE67{[[}}"
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 
-  s = "my secret message"
-  assert(luacaeser.decypher_text(luacaeser.cypher_text(s)) == s)
+  str = "my secret message"
+  assert(luacaeser.decypher_text(luacaeser.cypher_text(str)) == str)
 end
 
+function unittests()
+  unittest1()
+  unittest2()
+end
 
 -- Public Functions ( So LuaCyher can be used in other software )
 
@@ -197,37 +179,53 @@ end
 function luacaeser.decypher_text(str2)
   local retstr = ""
   local str    = good_str(str2)
-
   for i=1, #str do
     local char = str:sub(i, i)
     local indx = char_to_index(char)
     local step = indx - secret_number
-
     if (step > #ALPHAS) then
       step = step - STEPS
     end
-
     if (step < 1) then
       step = #ALPHAS + step
     end
-
     retstr = retstr..index_to_char(step)
   end
 
   return retstr
 end
 
-function luacaeser.unittests()
-  unittest1()
-  unittest2()
+local function parse()
+  arg_i = 1
+  while (arg_i <= #arg) do
+    token = arg[arg_i]
+    if (token == "--help") then
+      print_help()
+    elseif (token == "--version") then
+      print(string.format("%s by Toni Helminen", NAME))
+    elseif (token == "--unittests") then
+      unittests()
+    elseif (token == "-cypher") then
+      cmd_cypher()
+    elseif (token == "-decypher") then
+      cmd_decypher()
+    elseif (token == "-secretnum") then
+      cmd_set_secretnum(takenext())
+    elseif (token == "-smt") then
+      smt()
+    else
+      print(string.format("Illegal command: '%s'", token))
+      return
+    end
+    arg_i = arg_i + 1
+  end
 end
 
-function luacaeser.go()
+function luacaeser.cmdline() -- Try to parse command line
   if (#arg < 1) then
     print_help()
     return nil
   end
-
   parse()
 end
 
